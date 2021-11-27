@@ -1,0 +1,2 @@
+defmodule AlgoliaElixir do
+end
