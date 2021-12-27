@@ -3,6 +3,8 @@ defmodule AlgoliaElixir.Client do
     quote do
       use Tesla
 
+      adapter(Tesla.Adapter.Hackney, path_encode_fun: &URI.encode/1)
+
       plug(Tesla.Middleware.Headers, [
         {"X-Algolia-Application-Id", app_id()},
         {"X-Algolia-API-Key", api_key()}
