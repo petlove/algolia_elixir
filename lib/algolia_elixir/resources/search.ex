@@ -25,6 +25,8 @@ defmodule AlgoliaElixir.Resources.Search do
     |> URI.encode_query()
   end
 
+  defp format_params(params), do: URI.encode_query(params)
+
   defp format_filters(filters) when is_binary(filters), do: filters
 
   defp format_filters(filters) when is_map(filters) do

@@ -17,11 +17,11 @@ defmodule AlgoliaElixir.Middleware.BaseUrlWithRetry do
     opts = opts || []
 
     context = %{
-      app_id: opts[:app_id],
+      app_id: required!(opts, :app_id),
       retries: 0,
-      delay: integer_opt!(opts, :delay, 1),
+      delay: integer_opt!(opts, :delay, 0),
       max_retries: integer_opt!(opts, :max_retries, 0),
-      max_delay: integer_opt!(opts, :max_delay, 1),
+      max_delay: integer_opt!(opts, :max_delay, 0),
       should_retry: Keyword.get(opts, :should_retry, &match?({:error, _}, &1)),
       jitter_factor: float_opt!(opts, :jitter_factor, 0, 1)
     }
@@ -38,7 +38,7 @@ defmodule AlgoliaElixir.Middleware.BaseUrlWithRetry do
   end
 
   defp run_with_base_url(env, next, %{retries: retries, app_id: app_id}) do
-    n = rem(retries, 3) + 1
+    n = rem(retries - 1, 3) + 1
 
     BaseUrl.call(env, next, "https://#{app_id}-#{n}.algolia.net/1")
   end
@@ -92,6 +92,13 @@ defmodule AlgoliaElixir.Middleware.BaseUrlWithRetry do
       {:ok, value} when is_float(value) and value >= min and value <= max -> value
       {:ok, invalid} -> invalid_float(key, invalid, min, max)
       :error -> @defaults[key]
+    end
+  end
+
+  defp required!(opts, key) do
+    case Keyword.fetch(opts, key) do
+      {:ok, value} when is_binary(value) and value != "" -> value
+      _ -> raise(ArgumentError, "option: #{key} is required")
     end
   end
 
