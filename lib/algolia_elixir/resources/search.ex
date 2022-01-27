@@ -31,20 +31,23 @@ defmodule AlgoliaElixir.Resources.Search do
 
   defp format_filters(filters) when is_map(filters) do
     filters
-    |> Enum.reduce([], fn {name, values}, acc ->
-      facet =
-        cond do
-          is_binary(values) ->
-            "#{name}:#{values}"
-
-          is_list(values) ->
-            Enum.map_join(values, " OR ", fn value ->
-              "#{name}:#{value}"
-            end)
-        end
-
-      acc ++ ["(#{facet})"]
+    |> Enum.reduce([], fn filter, acc ->
+      acc ++ format_filter_value(filter)
     end)
     |> Enum.join(" AND ")
+  end
+
+  defp format_filter_value({_, ""}), do: []
+  defp format_filter_value({_, []}), do: []
+  defp format_filter_value({_, [""]}), do: []
+  defp format_filter_value({name, values}) when is_binary(values), do: ["(#{name}:\"#{values}\")"]
+
+  defp format_filter_value({name, values}) when is_list(values) do
+    facet =
+      Enum.map_join(values, " OR ", fn value ->
+        "#{name}:\"#{value}\""
+      end)
+
+    ["(#{facet})"]
   end
 end
