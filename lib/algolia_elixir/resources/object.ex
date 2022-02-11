@@ -16,6 +16,10 @@ defmodule AlgoliaElixir.Resources.Object do
   defp request_batch(index, action, objects) do
     requests = Enum.map(objects, &%{action: action, body: &1})
 
+    execute_batch(index, requests)
+  end
+
+  def execute_batch(index, requests) do
     post("/indexes/#{index}/batch", %{requests: requests})
   end
 end
