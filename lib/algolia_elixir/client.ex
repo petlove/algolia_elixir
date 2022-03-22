@@ -8,13 +8,15 @@ defmodule AlgoliaElixir.Client do
         {"X-Algolia-API-Key", api_key()}
       ])
 
+      plug(Tesla.Middleware.Telemetry)
+
       plug(Tesla.Middleware.JSON)
 
       plug(Elixir.AlgoliaElixir.Middleware.BaseUrlWithRetry,
         app_id: app_id(),
-        max_retries: 5,
+        max_retries: 3,
         should_retry: fn
-          {:ok, %{status: status}} when status in 300..499 -> true
+          {:ok, %{status: status}} when status >= 500 -> true
           {:ok, _} -> false
           {:error, _} -> true
         end
