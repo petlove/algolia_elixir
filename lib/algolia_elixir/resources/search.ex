@@ -41,6 +41,7 @@ defmodule AlgoliaElixir.Resources.Search do
   defp format_filter_value({_, []}), do: []
   defp format_filter_value({_, [""]}), do: []
   defp format_filter_value({name, values}) when is_binary(values), do: ["(#{name}:\"#{values}\")"]
+  defp format_filter_value({name, values}) when is_boolean(values), do: ["(#{name}:\#{values}\)"]
 
   defp format_filter_value({name, values}) when is_list(values) do
     facet =
