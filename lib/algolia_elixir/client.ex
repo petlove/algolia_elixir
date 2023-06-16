@@ -10,7 +10,7 @@ defmodule AlgoliaElixir.Client do
 
       plug(Tesla.Middleware.Telemetry)
 
-      plug(Tesla.Middleware.JSON)
+      plug(Tesla.Middleware.JSON, json_opts())
 
       plug(Elixir.AlgoliaElixir.Middleware.BaseUrlWithRetry,
         app_id: app_id(),
@@ -28,6 +28,10 @@ defmodule AlgoliaElixir.Client do
 
       defp api_key do
         Application.get_env(:algolia_elixir, :api_key)
+      end
+
+      defp json_opts do
+        Application.get_env(:algolia_elixir, :json_opts)
       end
 
       defmodule AlgoliaElixir.Error do
