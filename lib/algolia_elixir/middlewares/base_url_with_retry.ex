@@ -17,7 +17,7 @@ defmodule AlgoliaElixir.Middleware.BaseUrlWithRetry do
     opts = opts || []
 
     context = %{
-      app_id: required!(opts, :app_id),
+      subdomain: required!(opts, :subdomain),
       retries: 0,
       delay: integer_opt!(opts, :delay, 0),
       max_retries: integer_opt!(opts, :max_retries, 0),
@@ -29,18 +29,22 @@ defmodule AlgoliaElixir.Middleware.BaseUrlWithRetry do
     retry(env, next, context)
   end
 
-  defp run_with_base_url(%{opts: [action: :write]} = env, next, %{app_id: app_id}) do
-    BaseUrl.call(env, next, "https://#{app_id}.algolia.net/1")
+  defp run_with_base_url(env, next, %{subdomain: "analytics"}) do
+    BaseUrl.call(env, next, "https://analytics.algolia.com/2")
   end
 
-  defp run_with_base_url(env, next, %{retries: 0, app_id: app_id}) do
-    BaseUrl.call(env, next, "https://#{app_id}-dsn.algolia.net/1")
+  defp run_with_base_url(%{opts: [action: :write]} = env, next, %{subdomain: subdomain}) do
+    BaseUrl.call(env, next, "https://#{subdomain}.algolia.net/1")
   end
 
-  defp run_with_base_url(env, next, %{retries: retries, app_id: app_id}) do
+  defp run_with_base_url(env, next, %{retries: 0, subdomain: subdomain}) do
+    BaseUrl.call(env, next, "https://#{subdomain}-dsn.algolia.net/1")
+  end
+
+  defp run_with_base_url(env, next, %{retries: retries, subdomain: subdomain}) do
     n = rem(retries - 1, 3) + 1
 
-    BaseUrl.call(env, next, "https://#{app_id}-#{n}.algolia.net/1")
+    BaseUrl.call(env, next, "https://#{subdomain}-#{n}.algolia.net/1")
   end
 
   # If we have max retries set to 0 don't retry
