@@ -1,7 +1,9 @@
 defmodule AlgoliaElixir.Client do
-  defmacro __using__(_opts) do
-    quote do
+  defmacro __using__(opts) do
+    quote location: :keep, bind_quoted: [opts: opts] do
       use Tesla
+
+      @subdomain Keyword.get(opts, :subdomain, nil)
 
       plug(Tesla.Middleware.Headers, [
         {"X-Algolia-Application-Id", app_id()},
@@ -13,7 +15,7 @@ defmodule AlgoliaElixir.Client do
       plug(Tesla.Middleware.JSON, json_opts())
 
       plug(Elixir.AlgoliaElixir.Middleware.BaseUrlWithRetry,
-        app_id: app_id(),
+        subdomain: subdomain(),
         max_retries: 3,
         should_retry: fn
           {:ok, %{status: status}} when status >= 500 -> true
@@ -33,6 +35,8 @@ defmodule AlgoliaElixir.Client do
       defp json_opts do
         Application.get_env(:algolia_elixir, :json_opts)
       end
+
+      defp subdomain, do: @subdomain || app_id()
 
       defmodule AlgoliaElixir.Error do
         defexception message: "Unknown error"
