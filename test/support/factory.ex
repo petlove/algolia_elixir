@@ -8,6 +8,14 @@ defmodule AlgoliaElixir.Factory do
     }
   end
 
+  def search_factory do
+    %{
+      "search" => Faker.Beer.name(),
+      "count" => Faker.Random.Elixir.random_between(1, 10_000),
+      "nbHits" => Faker.Random.Elixir.random_between(1, 2_000)
+    }
+  end
+
   def search_result_factory do
     %{
       exhaustiveNbHits: true,
