@@ -13,6 +13,12 @@ defmodule AlgoliaElixir.Resources.Object do
     request_batch(index, "deleteObject", object_ids)
   end
 
+  def partil_update_object(index, object), do: partial_update_objects(index, [object])
+
+  def partial_update_objects(index, objects) do
+    request_batch(index, "partialUpdateObjectNoCreate", objects)
+  end
+
   defp request_batch(index, action, objects) do
     requests = Enum.map(objects, &%{action: action, body: &1})
 
