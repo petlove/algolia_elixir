@@ -41,7 +41,7 @@ defmodule AlgoliaElixir.Resources.Search do
   defp format_filter_value({_, []}), do: []
   defp format_filter_value({_, [""]}), do: []
   defp format_filter_value({name, values}) when is_binary(values), do: ["(#{name}:\"#{values}\")"]
-  defp format_filter_value({name, values}) when is_boolean(values), do: ["(#{name}:\#{values}\)"]
+  defp format_filter_value({name, values}) when is_boolean(values), do: ["(#{name}:#{values})"]
 
   defp format_filter_value({name, %{"min" => min, "max" => max}})
        when is_binary(min) and is_binary(max) and min != "" and max != "",
