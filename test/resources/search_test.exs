@@ -13,7 +13,7 @@ defmodule AlgoliaElixirTest.Resources.SearchTest do
 
     mock(fn %{method: :post, url: @url, body: body} ->
       assert body =~
-               URI.encode_query(%{"filters" => "(ages:old) AND (brand:brand1 OR brand:brand2)"})
+               "filters=%28ages%3A%22old%22%29+AND+%28brand%3A%22brand1%22+OR+brand%3A%22brand2%22%29&query=term"
 
       assert body =~ "query=term"
 
