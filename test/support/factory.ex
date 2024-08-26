@@ -32,4 +32,41 @@ defmodule AlgoliaElixir.Factory do
       renderingContent: %{}
     }
   end
+
+  def rule_factory do
+    %{
+      "_metadata" => %{"lastUpdate" => 1_724_161_095},
+      "conditions" => [
+        %{
+          "pattern" => %{
+            "matchLevel" => "none",
+            "matchedWords" => [],
+            "value" => Faker.Commerce.product_name()
+          }
+        }
+      ],
+      "consequence" => %{
+        "filterPromotes" => true,
+        "promote" => [
+          %{
+            "objectIDs" => ["#{Faker.Random.Elixir.random_between(100_000, 200_000)}"],
+            "position" => 1
+          }
+        ]
+      },
+      "description" => Faker.Lorem.sentence(),
+      "enabled" => true,
+      "objectID" => "qr-#{Faker.Random.Elixir.random_between(100_000, 200_000)}",
+      "tags" => ["visual-editor"]
+    }
+  end
+
+  def rule_result_factory do
+    %{
+      "hits" => build_list(3, :rule),
+      "nbHits" => 484,
+      "nbPages" => 484,
+      "page" => 0
+    }
+  end
 end
