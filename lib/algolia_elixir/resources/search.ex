@@ -4,28 +4,25 @@ defmodule AlgoliaElixir.Resources.Search do
   def search(index, params), do: multi_search([%{indexName: index, params: params}])
 
   def multi_search(queries) do
-    requests = format_multi_queries(queries)
+    requests = Enum.map(queries, &format_query/1)
 
     post("/indexes/*/queries", %{requests: requests})
   end
 
-  defp format_multi_queries(queries) do
-    Enum.map(queries, fn %{params: params} = query ->
-      formated_params = format_params(params)
-
-      Map.put(query, :params, formated_params)
-    end)
-  end
-
-  defp format_params(%{filters: filters} = params) do
-    formated_filters = format_filters(filters)
-
+  defp format_query(%{indexName: index, params: params}) do
     params
-    |> Map.put(:filters, formated_filters)
-    |> URI.encode_query()
+    |> format_params()
+    |> Map.put(:indexName, index)
+    |> Enum.reject(fn {_, value} -> is_nil(value) end)
+    |> Enum.into(%{})
   end
 
-  defp format_params(params), do: URI.encode_query(params)
+  defp format_params(params) do
+    params
+    |> Map.put(:filters, format_filters(params[:filters]))
+    |> Map.put(:analyticsTags, format_analytics_tags(params[:analytics_tags]))
+    |> Map.put(:optionalFilters, format_optional_filters(params[:optional_filters]))
+  end
 
   defp format_filters(filters) when is_binary(filters), do: filters
 
@@ -36,6 +33,14 @@ defmodule AlgoliaElixir.Resources.Search do
     end)
     |> Enum.join(" AND ")
   end
+
+  defp format_filters(_), do: nil
+
+  defp format_analytics_tags(tags) when is_list(tags), do: Enum.join(tags, ",")
+  defp format_analytics_tags(_), do: nil
+
+  defp format_optional_filters([_ | _] = optional_filters), do: [optional_filters]
+  defp format_optional_filters(_), do: nil
 
   defp format_filter_value({_, ""}), do: []
   defp format_filter_value({_, []}), do: []
