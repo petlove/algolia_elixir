@@ -20,8 +20,8 @@ defmodule AlgoliaElixir.Resources.Search do
   defp format_params(params) do
     params
     |> Map.put(:filters, format_filters(params[:filters]))
-    |> Map.put(:analyticsTags, format_analytics_tags(params[:analytics_tags]))
-    |> Map.put(:optionalFilters, format_optional_filters(params[:optional_filters]))
+    |> Map.put(:analyticsTags, format_analytics_tags(params[:analyticsTags]))
+    |> Map.put(:optionalFilters, format_optional_filters(params[:optionalFilters]))
   end
 
   defp format_filters(filters) when is_binary(filters), do: filters
