@@ -39,7 +39,12 @@ defmodule AlgoliaElixir.Resources.Search do
   defp format_analytics_tags(tags) when is_list(tags), do: Enum.join(tags, ",")
   defp format_analytics_tags(_), do: nil
 
-  defp format_optional_filters([_ | _] = optional_filters), do: [optional_filters]
+  defp format_optional_filters(optional_filters) when is_list(optional_filters) and length(optional_filters) > 0 do
+    Enum.map(optional_filters, fn %{filter_name: name, value: value} ->
+      "#{name}:#{value}"
+    end)
+  end
+
   defp format_optional_filters(_), do: nil
 
   defp format_filter_value({_, ""}), do: []
