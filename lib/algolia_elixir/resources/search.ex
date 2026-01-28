@@ -1,6 +1,14 @@
 defmodule AlgoliaElixir.Resources.Search do
   use AlgoliaElixir.Client
 
+  def browse_records(index, params \\ %{}) do
+    params
+    |> format_params()
+    |> Enum.reject(fn {_, value} -> is_nil(value) end)
+    |> Enum.into(%{})
+    |> then(&post("/indexes/#{index}/browse", &1))
+  end
+
   def search(index, params), do: multi_search([%{indexName: index, params: params}])
 
   def multi_search(queries) do
@@ -39,7 +47,8 @@ defmodule AlgoliaElixir.Resources.Search do
   defp format_analytics_tags(tags) when is_list(tags), do: Enum.join(tags, ",")
   defp format_analytics_tags(_), do: nil
 
-  defp format_optional_filters(optional_filters) when is_list(optional_filters) and length(optional_filters) > 0 do
+  defp format_optional_filters(optional_filters)
+       when is_list(optional_filters) and length(optional_filters) > 0 do
     Enum.map(optional_filters, fn %{filter_name: name, value: value} ->
       "#{name}:#{value}"
     end)

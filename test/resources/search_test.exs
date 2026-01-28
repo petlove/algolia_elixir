@@ -6,6 +6,7 @@ defmodule AlgoliaElixirTest.Resources.SearchTest do
   import Tesla.Mock
 
   @url "https://test-dsn.algolia.net/1/indexes/*/queries"
+  @browse_url "https://test-dsn.algolia.net/1/indexes/my_index/browse"
 
   test "search" do
     %{name: name} = object = build(:object)
@@ -76,5 +77,74 @@ defmodule AlgoliaElixirTest.Resources.SearchTest do
                 ]
               }
             }} = Search.multi_search(queries)
+  end
+
+  test "browse_records with empty params" do
+    %{name: name} = object = build(:object)
+    result = build(:search_result, hits: [object])
+
+    mock(fn %{method: :post, url: @browse_url, body: body} ->
+      assert body == "{}"
+      json(result)
+    end)
+
+    assert {:ok, %{status: 200, body: %{"hits" => [%{"name" => ^name}]}}} =
+             Search.browse_records("my_index")
+  end
+
+  test "browse_records with page, hitsPerPage and attributesToRetrieve" do
+    %{name: name} = object = build(:object)
+    result = build(:search_result, hits: [object])
+
+    mock(fn %{method: :post, url: @browse_url, body: body} ->
+      decoded = Jason.decode!(body)
+      assert decoded["page"] == 2
+      assert decoded["hitsPerPage"] == 100
+      assert decoded["attributesToRetrieve"] == ["objectID", "name"]
+      json(result)
+    end)
+
+    assert {:ok, %{status: 200, body: %{"hits" => [%{"name" => ^name}]}}} =
+             Search.browse_records("my_index", %{
+               page: 2,
+               hitsPerPage: 100,
+               attributesToRetrieve: ["objectID", "name"]
+             })
+  end
+
+  test "browse_records with cursor for next page" do
+    %{name: name} = object = build(:object)
+    result = build(:search_result, hits: [object])
+
+    mock(fn %{method: :post, url: @browse_url, body: body} ->
+      decoded = Jason.decode!(body)
+      assert decoded["cursor"] == "jMDY3M2MwM2QwMWUxMmQwYWI0ZTN"
+      json(result)
+    end)
+
+    assert {:ok, %{status: 200, body: %{"hits" => [%{"name" => ^name}]}}} =
+             Search.browse_records("my_index", %{cursor: "jMDY3M2MwM2QwMWUxMmQwYWI0ZTN"})
+  end
+
+  test "browse_records formats filters like search" do
+    %{name: name} = object = build(:object)
+    result = build(:search_result, hits: [object])
+
+    mock(fn %{method: :post, url: @browse_url, body: body} ->
+      decoded = Jason.decode!(body)
+      assert decoded["query"] == ""
+      assert decoded["filters"] =~ "category"
+      assert decoded["filters"] =~ "Book"
+      assert decoded["filters"] =~ "brand"
+      assert decoded["filters"] =~ "b1"
+      assert decoded["filters"] =~ "b2"
+      json(result)
+    end)
+
+    assert {:ok, %{status: 200, body: %{"hits" => [%{"name" => ^name}]}}} =
+             Search.browse_records("my_index", %{
+               query: "",
+               filters: %{category: "Book", brand: ["b1", "b2"]}
+             })
   end
 end
