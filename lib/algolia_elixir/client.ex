@@ -29,7 +29,10 @@ defmodule AlgoliaElixir.Client do
       end
 
       defp api_key do
-        Application.get_env(:algolia_elixir, :api_key)
+        case subdomain() do
+          "analytics" -> Application.get_env(:algolia_elixir, :analytics_api_key)
+          _ -> Application.get_env(:algolia_elixir, :api_key)
+        end
       end
 
       defp json_opts do
