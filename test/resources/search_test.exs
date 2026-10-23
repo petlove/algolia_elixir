@@ -44,6 +44,46 @@ defmodule AlgoliaElixirTest.Resources.SearchTest do
              })
   end
 
+  test "search with optional filters" do
+    result = %{results: [build(:search_result, hits: [])]}
+
+    mock(fn %{method: :post, url: @url, body: body} ->
+      assert %{"requests" => [%{"optionalFilters" => ["brand:b1", "brand:b2"]}]} =
+               Jason.decode!(body)
+
+      json(result)
+    end)
+
+    assert {:ok, %{status: 200}} =
+             Search.search("my_index", %{
+               query: "term",
+               optionalFilters: [
+                 %{filter_name: "brand", value: "b1"},
+                 %{filter_name: "brand", value: "b2"}
+               ]
+             })
+  end
+
+  test "search with grouped optional filters" do
+    result = %{results: [build(:search_result, hits: [])]}
+
+    mock(fn %{method: :post, url: @url, body: body} ->
+      assert %{"requests" => [%{"optionalFilters" => [["brand:b1", "brand:b2"], "ages:old"]}]} =
+               Jason.decode!(body)
+
+      json(result)
+    end)
+
+    assert {:ok, %{status: 200}} =
+             Search.search("my_index", %{
+               query: "term",
+               optionalFilters: [
+                 [%{filter_name: "brand", value: "b1"}, %{filter_name: "brand", value: "b2"}],
+                 %{filter_name: "ages", value: "old"}
+               ]
+             })
+  end
+
   test "multi_search" do
     queries = [
       %{indexName: "index1", params: %{query: "term1"}},

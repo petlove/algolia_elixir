@@ -49,12 +49,17 @@ defmodule AlgoliaElixir.Resources.Search do
 
   defp format_optional_filters(optional_filters)
        when is_list(optional_filters) and length(optional_filters) > 0 do
-    Enum.map(optional_filters, fn %{filter_name: name, value: value} ->
-      "#{name}:#{value}"
-    end)
+    Enum.map(optional_filters, &format_optional_filter/1)
   end
 
   defp format_optional_filters(_), do: nil
+
+  # A nested list is sent as an OR group: Algolia scores the group once instead
+  # of adding one point for every filter in it that matches.
+  defp format_optional_filter(group) when is_list(group),
+    do: Enum.map(group, fn %{filter_name: name, value: value} -> "#{name}:#{value}" end)
+
+  defp format_optional_filter(%{filter_name: name, value: value}), do: "#{name}:#{value}"
 
   defp format_filter_value({_, ""}), do: []
   defp format_filter_value({_, []}), do: []
