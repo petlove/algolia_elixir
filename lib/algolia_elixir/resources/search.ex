@@ -54,10 +54,13 @@ defmodule AlgoliaElixir.Resources.Search do
 
   defp format_optional_filters(_), do: nil
 
-  # A nested list is sent as an OR group: Algolia scores the group once instead
-  # of adding one point for every filter in it that matches.
+  # Strings are sent as given, so callers can use any Algolia syntax (scores,
+  # negation). A nested list is sent as an OR group: Algolia scores the group once
+  # instead of adding one point for every filter in it that matches.
+  defp format_optional_filter(filter) when is_binary(filter), do: filter
+
   defp format_optional_filter(group) when is_list(group),
-    do: Enum.map(group, fn %{filter_name: name, value: value} -> "#{name}:#{value}" end)
+    do: Enum.map(group, &format_optional_filter/1)
 
   defp format_optional_filter(%{filter_name: name, value: value}), do: "#{name}:#{value}"
 
